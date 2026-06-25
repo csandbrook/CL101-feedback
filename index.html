@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CL101 Session Feedback — MPhil in Conservation Leadership</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f5f5f3;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 1.5rem 1rem 4rem;
+  }
+  .wrap { max-width: 600px; margin: 0 auto; }
+
+  /* Header */
+  .module-badge {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+    color: #085041; background: #9FE1CB;
+    padding: 3px 10px; border-radius: 20px;
+    display: inline-block; margin-bottom: 12px;
+  }
+  h1 { font-size: 20px; font-weight: 600; line-height: 1.35; margin-bottom: 8px; color: #1a1a1a; }
+  .subtitle { font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 1.5rem; }
+  .anon-note {
+    font-size: 12px; color: #777;
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 1.5rem;
+  }
+  .anon-note svg { flex-shrink: 0; }
+
+  /* Session picker */
+  .section-label { font-size: 13px; font-weight: 600; color: #444; margin-bottom: 8px; }
+  .filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .filter-btn {
+    background: #fff; border: 1px solid #ddd;
+    border-radius: 20px; padding: 4px 13px;
+    font-size: 12px; cursor: pointer; color: #666;
+    font-family: inherit; transition: all 0.12s;
+  }
+  .filter-btn.active { background: #E1F5EE; border-color: #5DCAA5; color: #085041; font-weight: 500; }
+
+  .session-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 1.75rem; }
+  .session-btn {
+    background: #fff; border: 1px solid #e0e0e0;
+    border-radius: 8px; padding: 10px 14px;
+    cursor: pointer; text-align: left;
+    display: flex; align-items: center; gap: 12px;
+    width: 100%; font-family: inherit;
+    transition: border-color 0.12s, background 0.12s;
+  }
+  .session-btn:hover { border-color: #aaa; background: #fafafa; }
+  .session-btn:focus { outline: 2px solid #1D9E75; outline-offset: 2px; }
+  .session-btn.selected { border: 1.5px solid #1D9E75; background: #E1F5EE; }
+  .session-btn.done { opacity: 0.5; }
+  .session-num { font-size: 11px; color: #999; min-width: 20px; flex-shrink: 0; }
+  .session-info { flex: 1; min-width: 0; }
+  .session-title { font-size: 13px; font-weight: 500; color: #1a1a1a; line-height: 1.35; }
+  .session-speaker { font-size: 12px; color: #666; margin-top: 2px; }
+  .done-badge {
+    font-size: 11px; color: #0F6E56; background: #9FE1CB;
+    padding: 2px 8px; border-radius: 20px;
+    white-space: nowrap; flex-shrink: 0; display: none;
+  }
+  .session-btn.done .done-badge { display: inline-block; }
+
+  .selected-display {
+    background: #E1F5EE; border: 1px solid #5DCAA5;
+    border-radius: 8px; padding: 10px 14px;
+    margin-bottom: 1.5rem; font-size: 13px; color: #085041;
+    display: none; line-height: 1.5;
+  }
+
+  /* Form cards */
+  .form-card {
+    background: #fff; border: 1px solid #e8e8e8;
+    border-radius: 10px; padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .form-card h2 { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+  .hint { font-size: 12px; color: #888; margin-bottom: 12px; }
+
+  /* Star rating */
+  .stars { display: flex; gap: 6px; }
+  .star-btn {
+    background: none; border: 1px solid #ddd;
+    border-radius: 6px; width: 42px; height: 42px;
+    cursor: pointer; font-size: 16px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.12s; color: #888; font-family: inherit;
+  }
+  .star-btn:hover { border-color: #aaa; background: #f9f9f9; }
+  .star-btn:focus { outline: 2px solid #1D9E75; outline-offset: 2px; }
+  .star-btn.active { background: #FEF3C7; border-color: #F59E0B; color: #92400E; }
+  .star-label { font-size: 12px; color: #666; margin-top: 8px; min-height: 16px; }
+
+  /* Textareas */
+  textarea {
+    width: 100%; min-height: 80px; resize: vertical;
+    border: 1px solid #ddd; border-radius: 8px;
+    padding: 9px 12px; font-size: 13px; font-family: inherit;
+    color: #1a1a1a; background: #fafafa; line-height: 1.6;
+    transition: border-color 0.15s;
+  }
+  textarea:focus { outline: none; border-color: #1D9E75; background: #fff; }
+
+  /* Submit */
+  .submit-btn {
+    background: #1D9E75; color: white; border: none;
+    border-radius: 8px; padding: 13px 28px;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+    width: 100%; font-family: inherit; transition: background 0.15s;
+  }
+  .submit-btn:hover:not(:disabled) { background: #0F6E56; }
+  .submit-btn:focus { outline: 2px solid #1D9E75; outline-offset: 3px; }
+  .submit-btn:disabled {
+    background: #f0f0f0; color: #aaa; cursor: not-allowed; border: 1px solid #e0e0e0;
+  }
+  .submit-status { font-size: 12px; color: #666; text-align: center; margin-top: 8px; min-height: 16px; }
+  .submit-status.error { color: #c0392b; }
+
+  /* Success screen */
+  #success-view { display: none; text-align: center; padding: 4rem 1rem; }
+  .success-icon {
+    width: 60px; height: 60px; background: #E1F5EE; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.25rem;
+  }
+  #success-view h2 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  #success-view p { font-size: 14px; color: #555; margin-bottom: 2rem; line-height: 1.6; }
+  .back-btn {
+    background: none; border: 1px solid #ddd; border-radius: 8px;
+    padding: 10px 22px; font-size: 14px; cursor: pointer;
+    color: #1a1a1a; font-family: inherit;
+  }
+  .back-btn:hover { border-color: #aaa; background: #f5f5f5; }
+  .empty-msg { font-size: 13px; color: #999; padding: 1rem 0; }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app">
+  <div id="main-view">
+    <div style="margin-bottom: 1.5rem;">
+      <div class="module-badge">CL101</div>
+      <h1>Conservation Leadership Problems and Practice</h1>
+      <p class="subtitle">Select your session below and complete the three questions. Your responses are entirely anonymous — we cannot see who has rated which sessions.</p>
+      <div class="anon-note">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Session tracking is stored only on your device — not sent to us
+      </div>
+    </div>
+
+    <div class="section-label">Which session are you giving feedback for?</div>
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="setFilter('all', this)">All sessions</button>
+      <button class="filter-btn" onclick="setFilter('pending', this)">Not yet rated</button>
+      <button class="filter-btn" onclick="setFilter('done', this)">Already rated</button>
+    </div>
+    <div class="session-list" id="session-list" role="listbox" aria-label="Select a session"></div>
+
+    <div class="selected-display" id="selected-display" aria-live="polite"></div>
+
+    <div id="form-area" style="display:none;">
+      <div class="form-card">
+        <h2>How would you rate the overall quality of this session?</h2>
+        <p class="hint">1 = poor &nbsp;·&nbsp; 5 = excellent</p>
+        <div class="stars" id="stars" role="group" aria-label="Rating from 1 to 5"></div>
+        <div class="star-label" id="star-label" aria-live="polite"></div>
+      </div>
+      <div class="form-card">
+        <h2>What did you particularly like about this session?</h2>
+        <textarea id="q2" placeholder="What worked well, what was valuable..."></textarea>
+      </div>
+      <div class="form-card">
+        <h2>How could this session be improved in future?</h2>
+        <textarea id="q3" placeholder="Suggestions for the teaching team..."></textarea>
+      </div>
+      <button class="submit-btn" id="submit-btn" onclick="submitFeedback()" disabled>Submit feedback</button>
+      <div class="submit-status" id="submit-status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div id="success-view">
+    <div class="success-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2>Feedback submitted</h2>
+    <p>Thank you — your response has been recorded anonymously<br>and will help us improve the course.</p>
+    <button class="back-btn" onclick="showMain()">Give feedback for another session</button>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ────────────────────────────────────────────────────────────────────
+// Replace this URL with your Google Apps Script deployment URL after setup
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbypef7RAo25jWpNi7pxrg0GzwZs1e2X6zmNKy2yaNbrmhzWeUBHJFPpTMLKra1HAftUbg/exec";
+// ───────────────────────────────────────────────────────────────────────────────
+
+const SESSIONS = [
+  { id:  1, title: "What is conservation leadership?",                                   speaker: "Chris Sandbrook" },
+  { id:  2, title: "Finding your way through the leadership jungle",                     speaker: "Howard Nelson" },
+  { id:  3, title: "The IUCN Red List: a scientific tool for conservation action",       speaker: "Caroline Pollock" },
+  { id:  4, title: "Context for organisational change",                                  speaker: "Jon Hutton" },
+  { id:  5, title: "Pathways, politics and partnerships",                                speaker: "Melissa Leach" },
+  { id:  6, title: "Leading beyond authority",                                           speaker: "Alison Coburn" },
+  { id:  7, title: "Climate change policy",                                              speaker: "Najma Mohamed" },
+  { id:  8, title: "Past and future threats to biodiversity",                            speaker: "Abigail Entwistle" },
+  { id:  9, title: "Feeding the world without costing the earth",                        speaker: "Andrew Balmford" },
+  { id: 10, title: "How science underpins conservation",                                 speaker: "Juliet Vickery" },
+  { id: 11, title: "Earth optimism",                                                     speaker: "Andrew Balmford" },
+  { id: 12, title: "Society, science and the policy interface",                          speaker: "Andy Clements" },
+  { id: 13, title: "Decolonising conservation?",                                         speaker: "Liana Chua" },
+  { id: 14, title: "Hotspot or hot air? Science, myth and conservation in Madagascar",   speaker: "Ivan Scales" },
+  { id: 15, title: "The political ecology of conservation",                              speaker: "Bhaskar Vira" },
+  { id: 16, title: "How conservation and human rights interact",                         speaker: "Helen Tugendhat" },
+  { id: 17, title: "Module wrap-up",                                                     speaker: "Howard Nelson" },
+];
+
+const LABELS = ["", "Poor", "Below average", "Average", "Good", "Excellent"];
+const STORAGE_KEY = "cl101_done_v1";
+
+let selectedId = null;
+let selectedRating = 0;
+let currentFilter = "all";
+
+function getDone() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+  catch(e) { return []; }
+}
+function markDone(id) {
+  const done = getDone();
+  if (!done.includes(id)) { done.push(id); localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); }
+}
+
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  el.classList.add("active");
+  renderList();
+}
+
+function renderList() {
+  const done = getDone();
+  const list = document.getElementById("session-list");
+  const filtered = SESSIONS.filter(s => {
+    if (currentFilter === "pending") return !done.includes(s.id);
+    if (currentFilter === "done") return done.includes(s.id);
+    return true;
+  });
+  if (!filtered.length) {
+    list.innerHTML = `<p class="empty-msg">No sessions in this category yet.</p>`;
+    return;
+  }
+  list.innerHTML = filtered.map(s => `
+    <button class="session-btn${selectedId === s.id ? " selected" : ""}${done.includes(s.id) ? " done" : ""}"
+      onclick="selectSession(${s.id})"
+      role="option" aria-selected="${selectedId === s.id}">
+      <span class="session-num">${s.id}</span>
+      <span class="session-info">
+        <span class="session-title">${s.title}</span>
+        <span class="session-speaker">${s.speaker}</span>
+      </span>
+      <span class="done-badge" aria-label="already rated">✓ Rated</span>
+    </button>`).join("");
+}
+
+function selectSession(id) {
+  selectedId = id;
+  renderList();
+  const s = SESSIONS.find(x => x.id === id);
+  const disp = document.getElementById("selected-display");
+  disp.style.display = "block";
+  disp.innerHTML = `<strong>Session ${id}:</strong> ${s.title} — <em>${s.speaker}</em>`;
+  const fa = document.getElementById("form-area");
+  fa.style.display = "block";
+  setTimeout(() => fa.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
+}
+
+function buildStars() {
+  const c = document.getElementById("stars");
+  c.innerHTML = [1,2,3,4,5].map(i =>
+    `<button class="star-btn${selectedRating >= i ? " active" : ""}"
+      onclick="setRating(${i})" aria-label="Rate ${i} out of 5">${i}</button>`
+  ).join("");
+  document.getElementById("star-label").textContent = selectedRating ? LABELS[selectedRating] : "";
+}
+
+function setRating(n) {
+  selectedRating = n;
+  buildStars();
+  document.getElementById("submit-btn").disabled = false;
+}
+
+async function submitFeedback() {
+  if (!selectedId || !selectedRating) return;
+  const btn = document.getElementById("submit-btn");
+  const status = document.getElementById("submit-status");
+  const s = SESSIONS.find(x => x.id === selectedId);
+
+  btn.disabled = true;
+  btn.textContent = "Submitting…";
+  status.textContent = "";
+  status.classList.remove("error");
+
+  const payload = {
+    module: "CL101",
+    session_id: selectedId,
+    session_title: s.title,
+    session_speaker: s.speaker,
+    rating: selectedRating,
+    liked: document.getElementById("q2").value.trim(),
+    improvements: document.getElementById("q3").value.trim(),
+    submitted_at: new Date().toISOString()
+  };
+
+  if (SCRIPT_URL === "YOUR_APPS_SCRIPT_URL_HERE") {
+    console.log("Demo mode — payload:", payload);
+    await new Promise(r => setTimeout(r, 700));
+    markDone(selectedId);
+    showSuccess();
+    return;
+  }
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    markDone(selectedId);
+    showSuccess();
+  } catch(err) {
+    btn.disabled = false;
+    btn.textContent = "Submit feedback";
+    status.textContent = "Submission failed — please check your connection and try again.";
+    status.classList.add("error");
+  }
+}
+
+function showSuccess() {
+  document.getElementById("main-view").style.display = "none";
+  document.getElementById("success-view").style.display = "block";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function showMain() {
+  selectedId = null;
+  selectedRating = 0;
+  ["q2","q3"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("submit-btn").disabled = true;
+  document.getElementById("submit-btn").textContent = "Submit feedback";
+  document.getElementById("submit-status").textContent = "";
+  document.getElementById("main-view").style.display = "block";
+  document.getElementById("success-view").style.display = "none";
+  document.getElementById("form-area").style.display = "none";
+  document.getElementById("selected-display").style.display = "none";
+  renderList();
+  buildStars();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+renderList();
+buildStars();
+</script>
+</body>
+</html>
